@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        #chat-window { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; margin-bottom: 10px; }
+        .user-message { text-align: right; color: blue; }
+        .ai-message { text-align: left; color: green; }
+    </style>
+</head>
+<body>
+    <h1>AI Chatbot</h1>
+    <div id="chat-window"></div>
+    <input type="text" id="user-input" placeholder="Type your message...">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input');
+            const chatWindow = document.getElementById('chat-window');
+            const message = userInput.value;
+
+            if (!message) return;
+
+            // Display user message
+            const userDiv = document.createElement('div');
+            userDiv.className = 'user-message';
+            userDiv.textContent = `You: ${message}`;
+            chatWindow.appendChild(userDiv);
+
+            userInput.value = ''; // Clear input
+
+            // Call backend
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+                const data = await response.json();
+
+                const aiDiv = document.createElement('div');
+                aiDiv.className = 'ai-message';
+                aiDiv.textContent = `AI: ${data.response || data.error}`;
+                chatWindow.appendChild(aiDiv);
+            } catch (error) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'ai-message';
+                errorDiv.textContent = `Error: Could not reach backend.`;
+                chatWindow.appendChild(errorDiv);
+                console.error('Fetch error:', error);
+            }
+            chatWindow.scrollTop = chatWindow.scrollHeight; // Scroll to bottom
+        }
+    </script>
+</body>
+</html>
